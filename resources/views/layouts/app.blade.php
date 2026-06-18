@@ -247,14 +247,28 @@
         /* EMPTY STATE */
         .empty-state { text-align: center; padding: 48px; color: #9ca3af; font-size: 14px; }
 
+        /* GUEST TOPBAR (belum login) */
+        .guest-topbar {
+            background: white;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .guest-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: #1e293b; text-decoration:none; }
+        .guest-brand .icon { width: 32px; height: 32px; background: #1565C0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .guest-auth-links { display: flex; gap: 10px; align-items: center; }
+        .link-login { color: #1565C0; font-size: 13px; font-weight: 600; text-decoration: none; padding: 7px 14px; }
+        .btn-register { background: #1565C0; color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; }
+
         /* LOGIN PAGE */
         .login-page {
-            min-height: 100vh;
+            min-height: calc(100vh - 64px);
             background: linear-gradient(135deg, #1a3a8f 0%, #1565C0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 0 !important;
         }
         .login-card {
             background: white;
@@ -283,7 +297,7 @@
 <body>
 
 @auth
-{{-- SIDEBAR --}}
+{{-- ═══════════════ SUDAH LOGIN: tampilkan sidebar ═══════════════ --}}
 <aside class="sidebar">
     <div class="sidebar-brand">
         <div class="icon">📚</div>
@@ -291,17 +305,25 @@
     </div>
 
     <nav class="sidebar-nav">
-        <a href="{{ route('peminjaman.index') }}" class="{{ request()->is('peminjaman') ? 'active' : '' }}">
-            <span class="nav-icon">📋</span> Dashboard
+        <a href="{{ route('buku.index') }}" class="{{ request()->routeIs('buku.index') ? 'active' : '' }}">
+            <span class="nav-icon">📚</span> Katalog Buku
+        </a>
+
+        <a href="{{ route('riwayat.index') }}" class="{{ request()->routeIs('riwayat.index') ? 'active' : '' }}">
+            <span class="nav-icon">📋</span> Riwayat Saya
+        </a>
+
+        <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            <span class="nav-icon">👤</span> Edit Profil
         </a>
 
         @if(auth()->user()->isAdmin())
-            <a href="{{ route('peminjaman.create') }}" class="{{ request()->is('peminjaman/create') ? 'active' : '' }}">
-                <span class="nav-icon">➕</span> Tambah Data
-            </a>
             <hr class="sidebar-divider">
-            <a href="{{ route('buku.index') }}" class="{{ request()->is('buku*') ? 'active' : '' }}">
-                <span class="nav-icon">📖</span> Master Buku
+            <a href="{{ route('peminjaman.index') }}" class="{{ request()->routeIs('peminjaman.*') ? 'active' : '' }}">
+                <span class="nav-icon">🗂️</span> Kelola Peminjaman
+            </a>
+            <a href="{{ route('buku.create') }}" class="{{ request()->routeIs('buku.create') ? 'active' : '' }}">
+                <span class="nav-icon">➕</span> Tambah Buku
             </a>
         @endif
     </nav>
@@ -321,14 +343,11 @@
     </div>
 </aside>
 
-{{-- MAIN --}}
 <div class="main-content">
     <div class="topbar">
         <div class="topbar-title">@yield('page-title', 'Dashboard')</div>
         <div class="topbar-right">
-            @if(auth()->user()->isAdmin())
-                @yield('topbar-action')
-            @endif
+            @yield('topbar-action')
         </div>
     </div>
 
@@ -345,9 +364,36 @@
 </div>
 
 @else
-{{-- BELUM LOGIN - langsung tampilkan konten login/register --}}
+{{-- ═══════════════ BELUM LOGIN: topbar tipis dengan Login/Register kanan atas ═══════════════ --}}
 <div class="main-content" style="margin-left:0;width:100%">
-    @yield('content')
+
+    @if(!request()->routeIs('login') && !request()->routeIs('register'))
+        <div class="guest-topbar">
+            <a href="{{ route('buku.index') }}" class="guest-brand">
+                <div class="icon">📚</div> Library App
+            </a>
+            <div class="guest-auth-links">
+                <a href="{{ route('login') }}" class="link-login">Login</a>
+                <a href="{{ route('register') }}" class="btn-register">Daftar</a>
+            </div>
+        </div>
+        <div class="page-content">
+            @if(session('success'))
+                <div class="alert-success">✅ {{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert-error">❌ {{ session('error') }}</div>
+            @endif
+            @yield('content')
+        </div>
+    @else
+        @if(session('success'))
+            <div style="position:fixed;top:16px;right:16px;z-index:999;max-width:320px">
+                <div class="alert-success">✅ {{ session('success') }}</div>
+            </div>
+        @endif
+        @yield('content')
+    @endif
 </div>
 @endauth
 

@@ -15,6 +15,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'identitas',
     ];
 
     protected $hidden = [
@@ -30,11 +31,27 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Cek apakah user adalah Admin
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'Admin';
+    }
+
+    /**
+     * Semua riwayat peminjaman milik user ini
+     */
+    public function peminjaman()
+    {
+        return $this->hasMany(PeminjamanBuku::class, 'user_id');
+    }
+
+    /**
+     * Cek apakah user masih punya peminjaman aktif untuk buku tertentu
+     */
+    public function sedangMeminjam(int $bukuId): bool
+    {
+        return $this->peminjaman()
+            ->where('buku_id', $bukuId)
+            ->where('status', 'Dipinjam')
+            ->exists();
     }
 }

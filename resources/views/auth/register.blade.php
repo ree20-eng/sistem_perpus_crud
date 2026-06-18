@@ -24,6 +24,10 @@
                 <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
             </div>
             <div class="form-group">
+                <label class="form-label">Nomor Identitas (NIM/NIP/KTP) <span style="color:#9ca3af;font-weight:400">opsional, bisa diisi nanti</span></label>
+                <input type="text" name="identitas" value="{{ old('identitas') }}" class="form-control" placeholder="Contoh: 2210201099">
+            </div>
+            <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" required>
             </div>

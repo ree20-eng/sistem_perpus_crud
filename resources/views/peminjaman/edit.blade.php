@@ -49,11 +49,11 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Status</label>
-                     <select name="status" class="form-control" required>
-                         <option value="Dipinjam" 
-                             {{ old('status', $peminjaman->status) == 'Dipinjam' ? 'selected' : '' }}> Dipinjam</option>
+                <select name="status" class="form-control" required>
+                    <option value="Dipinjam" 
+                        {{ old('status', $peminjaman->status) == 'Dipinjam' ? 'selected' : '' }}> Dipinjam</option>
                                 <option value="Sudah Dikembalikan" 
-                            {{ old('status', $peminjaman->status) == 'Sudah Dikembalikan' ? 'selected' : '' }}>Sudah Dikembalikan</option>
+                        {{ old('status', $peminjaman->status) == 'Sudah Dikembalikan' ? 'selected' : '' }}>Sudah Dikembalikan</option>
                 </select>
             </div>
             <div class="form-group">
