@@ -36,17 +36,11 @@ class User extends Authenticatable
         return $this->role === 'Admin';
     }
 
-    /**
-     * Semua riwayat peminjaman milik user ini
-     */
     public function peminjaman()
     {
         return $this->hasMany(PeminjamanBuku::class, 'user_id');
     }
 
-    /**
-     * Cek apakah user masih punya peminjaman aktif untuk buku tertentu
-     */
     public function sedangMeminjam(int $bukuId): bool
     {
         return $this->peminjaman()

@@ -9,17 +9,11 @@ use Illuminate\Validation\Rule;
 
 class ProfileIdentitasController extends Controller
 {
-    /**
-     * Tampilkan halaman edit profile (nama, email, identitas, password).
-     */
     public function edit()
     {
         return view('profile.edit-identitas');
     }
 
-    /**
-     * Update data profile milik user yang login.
-     */
     public function update(Request $request)
     {
         $user = Auth::user();
@@ -27,8 +21,11 @@ class ProfileIdentitasController extends Controller
         $validated = $request->validate([
             'name'      => ['required', 'string', 'max:255'],
             'email'     => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'identitas' => ['required', 'string', 'max:50'],
+            'identitas' => ['required', 'numeric', 'digits_between:5,20'],
             'password'  => ['nullable', 'confirmed', 'min:8'],
+        ], [
+            'identitas.numeric' => 'Nomor identitas hanya boleh berisi angka.',
+            'identitas.digits_between' => 'Nomor identitas harus 5-20 digit angka.',
         ]);
 
         $user->name      = $validated['name'];

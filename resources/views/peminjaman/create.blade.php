@@ -3,28 +3,40 @@
 @section('title', 'Tambah Peminjaman')
 @section('page-title', 'Tambah Data Peminjaman')
 
+@section('topbar-action')
+    <a href="{{ route('peminjaman.index') }}" class="btn-cancel" style="padding:7px 16px;font-size:13px">← Kembali</a>
+@endsection
+
 @section('content')
 <div class="card" style="max-width:680px">
     <div class="card-header">
-        <span class="card-title">➕ Form Tambah Peminjaman</span>
+        <div>
+            <div class="card-title">➕ Form Tambah Peminjaman</div>
+            <div class="card-subtitle">Input manual oleh Admin (untuk peminjam walk-in tanpa akun)</div>
+        </div>
     </div>
     <div style="padding:24px">
         @if($errors->any())
-            <div class="alert-error">
-                @foreach($errors->all() as $error)<div>• {{ $error }}</div>@endforeach
+            <div class="alert alert-error">
+                @foreach($errors->all() as $e)<div>• {{ $e }}</div>@endforeach
             </div>
         @endif
 
         <form method="POST" action="{{ route('peminjaman.store') }}" enctype="multipart/form-data">
             @csrf
+
             <div class="form-group">
                 <label class="form-label">Nama Peminjam</label>
-                <input type="text" name="nama_peminjam" value="{{ old('nama_peminjam') }}" class="form-control" placeholder="Masukkan nama peminjam" required>
+                <input type="text" name="nama_peminjam" value="{{ old('nama_peminjam') }}"
+                       class="form-control" placeholder="Masukkan nama peminjam" required>
             </div>
+
             <div class="form-group">
-                <label class="form-label">Nomor Identitas (NIM/NIP/KTP)</label>
-                <input type="text" name="identitas" value="{{ old('identitas') }}" class="form-control" placeholder="Masukkan nomor identitas" required>
+                <label class="form-label">Nomor Identitas <span class="form-hint">NIM / NIP / KTP</span></label>
+                <input type="text" name="identitas" value="{{ old('identitas') }}"
+                       class="form-control" placeholder="Masukkan nomor identitas" required>
             </div>
+
             <div class="form-group">
                 <label class="form-label">Judul Buku</label>
                 <select name="buku_id" class="form-control" required>
@@ -32,35 +44,42 @@
                     @foreach($bukus as $buku)
                         <option value="{{ $buku->id }}" {{ old('buku_id') == $buku->id ? 'selected' : '' }}>
                             {{ $buku->judul }} — {{ $buku->pengarang }}
+                            (Stok: {{ $buku->stok_tersedia }})
                         </option>
                     @endforeach
                 </select>
             </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Tanggal Pinjam</label>
-                    <input type="date" name="tanggal_pinjam" value="{{ old('tanggal_pinjam', date('Y-m-d')) }}" class="form-control" required>
+                    <input type="date" name="tanggal_pinjam"
+                           value="{{ old('tanggal_pinjam', date('Y-m-d')) }}"
+                           class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Tenggat Kembali</label>
-                    <input type="date" name="tenggat_kembali" value="{{ old('tenggat_kembali') }}" class="form-control" required>
+                    <input type="date" name="tenggat_kembali"
+                           value="{{ old('tenggat_kembali', date('Y-m-d', strtotime('+7 days'))) }}"
+                           class="form-control" required>
                 </div>
             </div>
+
             <div class="form-group">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-control" required>
-                    <option value="Dipinjam" 
-                        {{ old('status', $peminjaman->status) == 'Dipinjam' ? 'selected' : '' }}> Dipinjam</option>
-                                <option value="Sudah Dikembalikan" 
-                        {{ old('status', $peminjaman->status) == 'Sudah Dikembalikan' ? 'selected' : '' }}>Sudah Dikembalikan</option>
+                    <option value="Dipinjam" {{ old('status') == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
+                    <option value="Sudah Dikembalikan" {{ old('status') == 'Sudah Dikembalikan' ? 'selected' : '' }}>Sudah Dikembalikan</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label class="form-label">Foto Identitas <span style="color:#9ca3af;font-weight:400">(JPG/PNG/PDF, maks 2MB)</span></label>
+                <label class="form-label">Foto Identitas <span class="form-hint">JPG/PNG/PDF, maks 2MB — opsional</span></label>
                 <input type="file" name="foto_identitas" accept=".jpg,.jpeg,.png,.pdf" class="form-control">
             </div>
+
             <div style="display:flex;gap:10px;margin-top:8px">
-                <button type="submit" class="btn-save">💾 Simpan</button>
+                <button type="submit" class="btn-save">💾 Simpan Data</button>
                 <a href="{{ route('peminjaman.index') }}" class="btn-cancel">Batal</a>
             </div>
         </form>

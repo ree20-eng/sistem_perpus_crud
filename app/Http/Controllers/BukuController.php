@@ -42,6 +42,19 @@ class BukuController extends Controller
         return view('buku.index', compact('bukus', 'sedangDipinjamIds'));
     }
 
+    /**
+     * Halaman detail bibliografi 1 buku — bisa diakses publik.
+     */
+    public function show(Buku $buku)
+    {
+        $sedangDipinjam = false;
+        if (Auth::check()) {
+            $sedangDipinjam = Auth::user()->sedangMeminjam($buku->id);
+        }
+
+        return view('buku.show', compact('buku', 'sedangDipinjam'));
+    }
+
     public function create()
     {
         return view('buku.create');

@@ -24,7 +24,10 @@ class RegisteredUserController extends Controller
             'name'      => ['required', 'string', 'max:255'],
             'email'     => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password'  => ['required', 'confirmed', Rules\Password::defaults()],
-            'identitas' => ['nullable', 'string', 'max:50'],
+            'identitas' => ['nullable', 'numeric', 'digits_between:5,20'],
+        ], [
+            'identitas.numeric' => 'Nomor identitas hanya boleh berisi angka.',
+            'identitas.digits_between' => 'Nomor identitas harus 5-20 digit angka.',
         ]);
 
         $user = User::create([
@@ -37,8 +40,6 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // TIDAK auto-login. User diarahkan kembali ke halaman login
-        // supaya harus memasukkan email & password sendiri.
         return redirect()->route('login')
             ->with('success', 'Akun berhasil dibuat! Silakan login dengan email dan password Anda.');
     }

@@ -5,37 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Buku;
 use App\Models\PeminjamanBuku;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class PeminjamanMandiriController extends Controller
 {
     /**
-     * Proses peminjaman mandiri oleh user yang sedang login.
-     * Data nama & identitas otomatis diambil dari akun (tidak perlu isi ulang).
-     * Tenggat kembali otomatis = tanggal pinjam + 7 hari.
+     * User memilih durasi pinjam (1-7 hari).
+     * Tanggal pinjam = hari ini.
+     * Tenggat kembali = hari ini + durasi yang dipilih.
      */
     public function pinjam(Request $request, Buku $buku)
     {
         $user = Auth::user();
 
-        // Validasi: identitas wajib sudah diisi di profil sebelum bisa pinjam
+        $request->validate([
+            'durasi_hari' => ['required', 'integer', 'min:1', 'max:7'],
+        ], [
+            'durasi_hari.required' => 'Pilih durasi peminjaman.',
+            'durasi_hari.min'      => 'Durasi minimal 1 hari.',
+            'durasi_hari.max'      => 'Durasi maksimal 7 hari.',
+        ]);
+
         if (empty($user->identitas)) {
             return redirect()->route('profile.edit')
                 ->with('error', 'Lengkapi nomor identitas (NIM/NIP/KTP) di profil Anda sebelum meminjam buku.');
         }
 
-        // Validasi: stok harus tersedia
         if (!$buku->isReady()) {
             return back()->with('error', 'Maaf, stok buku ini sedang habis.');
         }
 
-        // Validasi: user tidak boleh pinjam buku yang sama 2x sebelum dikembalikan
         if ($user->sedangMeminjam($buku->id)) {
             return back()->with('error', 'Anda masih memiliki peminjaman aktif untuk buku ini.');
         }
 
-        $tanggalPinjam  = now()->format('Y-m-d');
-        $tenggatKembali = now()->addDays(7)->format('Y-m-d'); // estimasi 7 hari
+        $durasi         = (int) $request->durasi_hari;
+        $tanggalPinjam  = Carbon::today()->format('Y-m-d');
+        $tenggatKembali = Carbon::today()->addDays($durasi)->format('Y-m-d');
+        $tenggatFormatted = Carbon::today()->addDays($durasi)->translatedFormat('d F Y');
 
         PeminjamanBuku::create([
             'user_id'         => $user->id,
@@ -50,18 +58,13 @@ class PeminjamanMandiriController extends Controller
         $buku->kurangiStok();
 
         return redirect()->route('riwayat.index')
-            ->with('success', "Berhasil meminjam \"{$buku->judul}\". Harap kembalikan sebelum {$tenggatKembali}.");
+            ->with('success', "Berhasil meminjam \"{$buku->judul}\" selama {$durasi} hari. Harap kembalikan sebelum {$tenggatFormatted}.");
     }
 
-    /**
-     * User mengembalikan buku miliknya sendiri.
-     * Stok buku otomatis bertambah kembali.
-     */
     public function kembalikan(PeminjamanBuku $peminjaman)
     {
         $user = Auth::user();
 
-        // Pastikan hanya pemilik peminjaman yang bisa mengembalikan
         if ($peminjaman->user_id !== $user->id) {
             abort(403, 'Anda tidak berhak mengubah data peminjaman ini.');
         }
@@ -79,9 +82,6 @@ class PeminjamanMandiriController extends Controller
         return back()->with('success', 'Buku berhasil ditandai sebagai dikembalikan. Terima kasih!');
     }
 
-    /**
-     * Halaman riwayat peminjaman milik user yang login.
-     */
     public function riwayat()
     {
         $riwayat = PeminjamanBuku::with('buku')
